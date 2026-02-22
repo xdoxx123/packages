@@ -171,6 +171,7 @@ if args[1] == "install" then
 end
 
 if args[1] == "list" then
+    
     print("listing")
     for name,data in pairs(packagestable) do
         print("\t"..name)
@@ -196,7 +197,23 @@ if args[1] == "updateall" then
     end
 end
 
+if args[1] == "uninstallall" then
+    print("are you sure you want to uninstall everything? Y\\n")
+    local respond = io.read()
+    if string.lower(respond) == "y" then
+        for key, value in ipairs(downloadedpackages()) do
+        deletepackage(value)
+    end
+    end
+end
 
+if args[1] == "listinstalled" then
+    print("listing installed")
+        for key, value in ipairs(downloadedpackages()) do
+        print(value)
+        end
+end
 if #args == 0 then
-    print("Usage : pm install <package> \n\tpm list\n\tpm uninstall package\n\tpm update package\n\tpm updateall")
+
+    print("Usage : pm install [-i] <package> \n\tpm list\n\tpm uninstall package\n\tpm update package\n\tpm updateall\n\tpm uninstallall\n\tpm listinstalled")
 end
