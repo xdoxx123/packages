@@ -14,11 +14,11 @@ return {
   ["pm"] = {
     name="pm",
     files={["main/pm.lua"]="/usr/bin"}
-  }
+  },
   ["shit"] = {
     name="shit lib",
     files={["main/shit.lua"]="/usr/lib"}
-  }
+  },
   ["shiter"] = {
     name="shiter",
     files={["main/shiter.lua"]="/usr/bin"}
