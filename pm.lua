@@ -1,10 +1,12 @@
 local internet = require("internet")
 local baseurl = "https://raw.githubusercontent.com/xdoxx123/packages/refs/heads/"
+local packagesdata = "/etc/packages.data"
 local packages = "https://raw.githubusercontent.com/xdoxx123/packages/refs/heads/main/packages.lua"
 local filesystem = require("filesystem")
 local shell = require("shell")
 local gpu = require("component").gpu
-local args,options = shell.parse(...)
+local serialization = require("serialization")
+local args = {...}
 
 function split(s, delimiter)
   result = {};
@@ -19,7 +21,7 @@ end
 function getpackages(url)
     local code = ""
     for chunk in internet.request(packages) do code=code..chunk end
-  
+
     return code
 end
 
@@ -37,16 +39,34 @@ function quickwrite(path,data)
         file:close()
 end
 
+
 function warn(str)
     local foreground = gpu.getForeground()
     gpu.setForeground(0x00FFFF)
     print(str)
     gpu.setForeground(foreground)
 end
-
+local function readfile(path)
+    local file =  io.open(path,"r")
+    if file == nil then return end
+    local dump = file:read("a")
+    return dump
+end
 
 
 local packagestable = load(getpackages(packages))()
+local installedpackages = {}
+if filesystem.exists(packagesdata) then
+   local file = readfile(packagesdata)
+   if file == "" or file == "{}" then
+        
+    else
+        local deserial = serialization.unserialize(file)
+   installedpackages = deserial
+   end
+   
+end
+
 
 function downloadpackage(name)
     local tablevalue = packagestable[name]
@@ -62,41 +82,95 @@ function downloadpackage(name)
         end
 
         quickwrite(realpath,data)
-
+        installedpackages[name] = installedpackages[name] or {}
+        table.insert(installedpackages[name], realpath)
+        quickwrite(packagesdata,serialization.serialize(installedpackages))
         print("saved "..filename.." to "..loc)
 
     end
 end
 
-local function readfile(path)
-    local file =  filesystem.open(path,"r")
-    if file == nil then return end
-    local dump = file:read(math.huge)
-    return dump
+function packagedownloaded(name)
+
+    return packagestable[name] ~= nil
 end
 
 
-if not filesystem.exists("/etc/packages.cfg") then
-    filesystem.open("/etc/packages.cfg","w"):close()
+function deletepackage(name,silent)
+    if packagedownloaded(name) == false then
+        warn("package isnt installed?")
+        return
+    end
+    local files = installedpackages[name]
+    if silent == false or silent == nil then print("[!] deleting ".. name) end
+    for index, value in ipairs(files) do
+        if filesystem.exists(value) then
+            print("[!] uninstalling "..value)
+            filesystem.remove(value)
+        end
+    end
+    installedpackages[name] = nil
+    quickwrite(packagesdata,serialization.serialize(installedpackages))
+end
+function getrealname(name)
+    
+    return packagestable[name].name
+end
+function downloadedpackages()
+    local tabls = {}
+    for key, value in pairs(installedpackages) do
+        table.insert(tabls,key)
+    end
+    return tabls
+end
+function updatepackage(name)
+    
+    print("[!] updating "..name)
+    deletepackage(name,true)
+    downloadpackage(name)
 end
 
+if not filesystem.exists(packagesdata) then
+    filesystem.open(packagesdata,"w"):close()
+end
 
-
-if options["S"] == true then
-    if args[1] == nil then print("lacking name!") return end
-    local name = args[1]
+if args[1] == "install" then
+    
+    if args[2] == nil then print("lacking name!") return end
+    local name = args[2]
     if packagestable[name] == nil then print("not found!") return end
     print("found "..name)
     downloadpackage(name)
-    return
+    
 end
+
 if args[1] == "list" then
     print("listing")
     for name,data in pairs(packagestable) do
         print("\t"..name)
     end
-    return
+    
+end
+if args[1] == "uninstall" then
+   if args[2] == nil then print("lacking name!") return end
+    local name = args[2]
+    deletepackage(name)
 end
 
-print("usage : pm -S [packagename] \n\tpm list")
+if args[1] == "update" then
+   if args[2] == nil then print("lacking name!") return end
+    local name = args[2]
+    updatepackage(name)
+end
 
+if args[1] == "updateall" then
+    
+    for key, value in ipairs(downloadedpackages()) do
+        updatepackage(value)
+    end
+end
+
+
+if #args == 0 then
+    print("Usage : pm install <package> \n\tpm list\n\tpm uninstall package\n\tpm update package\n\tpm updateall")
+end
