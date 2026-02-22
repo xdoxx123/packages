@@ -54,7 +54,13 @@ local function readfile(path)
 end
 
 
-local packagestable = load(getpackages(packages))()
+local chunk, err = load(getpackages(packages))
+if not chunk then
+    warn("Load error: " .. tostring(err))
+    return
+end
+
+local packagestable = chunk()
 local installedpackages = {}
 if filesystem.exists(packagesdata) then
    local file = readfile(packagesdata)
@@ -67,14 +73,41 @@ if filesystem.exists(packagesdata) then
    
 end
 
+function getrealname(name)
+    
+    return packagestable[name].name
+end
+function packagedownloaded(name)
+
+    return installedpackages[name] ~= nil
+end
 
 function downloadpackage(name)
     local tablevalue = packagestable[name]
     for path,loc in pairs(tablevalue.files) do
+        
         local data = getfile(path)
         local split = split(path,"/")
         local filename = split[#split]
+        
         local realpath = loc.."/"..filename
+        if tablevalue.depends ~= nil then
+            print("program has depends downloading now!")
+            for index, value in ipairs(tablevalue.depends) do
+                if packagedownloaded(value) then
+                    warn("[!] "..value.." is already installed skipping")
+                    goto con
+                else
+                    downloadpackage(value)
+                end
+
+                ::con::
+            end
+        end
+        
+        
+        
+        
         print("downloading "..tablevalue.name)
         if filesystem.exists(realpath) then
             warn("package already exists reinstalling")
@@ -90,10 +123,6 @@ function downloadpackage(name)
     end
 end
 
-function packagedownloaded(name)
-
-    return packagestable[name] ~= nil
-end
 
 
 function deletepackage(name,silent)
@@ -112,10 +141,7 @@ function deletepackage(name,silent)
     installedpackages[name] = nil
     quickwrite(packagesdata,serialization.serialize(installedpackages))
 end
-function getrealname(name)
-    
-    return packagestable[name].name
-end
+
 function downloadedpackages()
     local tabls = {}
     for key, value in pairs(installedpackages) do
