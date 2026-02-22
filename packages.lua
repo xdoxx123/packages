@@ -17,11 +17,11 @@ return {
   }
   ["shit"] = {
     name="shit lib",
-    files={[main/shit.lua]="/usr/lib"}
+    files={["main/shit.lua"]="/usr/lib"}
   }
   ["shiter"] = {
     name="shiter",
-    files={[main/shiter.lua]="/usr/bin"}
+    files={["main/shiter.lua"]="/usr/bin"}
     depends={"shit"}
   }
 }
