@@ -10,6 +10,10 @@ return {
   ["protnet"] = {
     name="protnet",
     files={["main/linknets/protnet.lua"]="/usr/bin"}
+  },
+  ["pm"] = {
+    name="pm",
+    files={["main/pm.lua"]="/usr/bin"}
   }
 
 }
