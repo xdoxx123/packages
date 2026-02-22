@@ -1,7 +1,7 @@
 return {
   ["skid"] = {
-    name="skid"
-    files={"main/bob.lua"="/usr"}
+    name="skid",
+    files={["main/bob.lua"]="/usr/bin"}
   }
 
 
