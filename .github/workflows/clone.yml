@@ -1,0 +1,18 @@
+name: Mirror from Codeberg
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror clone
+        run: |
+          rm -rf repo
+          git clone --mirror https://codeberg.org/xdoxx123/packages.git repo
+          cd repo
+          git remote set-url --push origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git push --mirror
