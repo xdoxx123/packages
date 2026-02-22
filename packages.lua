@@ -21,7 +21,7 @@ return {
   },
   ["shiter"] = {
     name="shiter",
-    files={["main/shiter.lua"]="/usr/bin"}
+    files={["main/shiter.lua"]="/usr/bin"},
     depends={"shit"}
   }
 }
