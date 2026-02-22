@@ -1,0 +1,28 @@
+name: Mirror from Codeberg
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clone the Codeberg repo as a bare mirror (includes all branches, tags, refs)
+      - name: Clone Codeberg repository
+        run: |
+          git clone --mirror https://codeberg.org/xdoxx123/packages.git repo
+
+      # Force push everything to GitHub, replacing its contents entirely
+      - name: Push mirror to GitHub
+        run: |
+          cd repo
+          # Set the GitHub remote using the built-in GITHUB_TOKEN
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          # Force push all refs (branches, tags, etc.) to GitHub
+          git push --mirror
