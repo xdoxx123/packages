@@ -1,9 +1,12 @@
-name: Mirror from Codeberg
+name: mirror
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   
+    - cron: "*/15 * * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   mirror:
