@@ -7,7 +7,10 @@ local shell = require("shell")
 local gpu = require("component").gpu
 local serialization = require("serialization")
 local args = {...}
+if #args == 0 then
 
+    print("Usage : pm install [-i] <package> \n\tpm list\n\tpm uninstall package\n\tpm update package\n\tpm updateall\n\tpm uninstallall\n\tpm listinstalled")
+end
 function split(s, delimiter)
   result = {};
   for match in (s..delimiter):gmatch("(.-)"..delimiter) do
@@ -105,7 +108,10 @@ function downloadpackage(name)
             end
         end
         
-        
+        if not filesystem.exists(loc) then
+           
+            filesystem.makeDirectory(loc)
+        end
         
         
         print("downloading "..tablevalue.name)
@@ -212,8 +218,4 @@ if args[1] == "listinstalled" then
         for key, value in ipairs(downloadedpackages()) do
         print(value)
         end
-end
-if #args == 0 then
-
-    print("Usage : pm install [-i] <package> \n\tpm list\n\tpm uninstall package\n\tpm update package\n\tpm updateall\n\tpm uninstallall\n\tpm listinstalled")
 end
