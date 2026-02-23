@@ -23,5 +23,9 @@ return {
     name="shiter",
     files={["main/shiter.lua"]="/usr/bin"},
     depends={"shit"}
+  },
+  ["daemon"] = {
+    name="deamon maker",
+    files={["main/daemon.lua"]="/usr/bin"}
   }
 }
